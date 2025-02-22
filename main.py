@@ -3,7 +3,7 @@ import os
 import logging
 import aiosqlite
 
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 from dotenv import load_dotenv
 
 
@@ -37,4 +37,25 @@ async def on_ready():
         )
     ''')
     await bot.db.commit()
+    ping.start()
+
+  
+@bot.listen()
+async def on_message(message):
+    prefix = await bot.get_prefix(message)
+    if bot.user in message.mentions and not message.reference:
+        embed = disnake.Embed(
+            description=f'Enter command `/help` or `{prefix}help`',
+            color=disnake.Color.from_rgb(52,89,149)
+        )
+        await message.channel.send(embed=embed)
+    await bot.process_commands(message)
+
+
+  
+@tasks.loop(minutes=25)
+async def ping():
+    channel = bot.get_channel(1270281823322247280)
+    await channel.send('<@1342459857785061398>')
+    
 bot.run(os.getenv('TOKEN'))
